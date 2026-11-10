@@ -1,0 +1,48 @@
+name: StreamSpec CI/CD & Mathematical Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Verify Invariants & Pipeline (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install PyTorch CPU & Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers safetensors pytest matplotlib psutil
+
+      - name: Run Mathematical Invariant Test Suite
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m pytest tests/ -v
+
+      - name: Run Local Flagship Benchmark
+        env:
+          PYTHONPATH: .
+        run: |
+          python demo_local.py
+
+      - name: Validate Cloud Benchmark Notebook Syntax
+        run: |
+          python -c "import json; nb = json.load(open('notebooks/streamspec_70b_benchmark.ipynb', encoding='utf-8')); assert len(nb['cells']) > 5, 'Notebook incomplete'; print('✅ Benchmark notebook validated successfully.')"

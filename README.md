@@ -5,6 +5,7 @@
 **Run 70B & DeepSeek-R1 Reasoning Models on Consumer Laptops with Pure Python & Zero GPU Clusters**
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Prajwal7-2002/streamspec/blob/main/notebooks/streamspec_70b_benchmark.ipynb)
+[![CI/CD: Active](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml/badge.svg)](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
 [![PyTorch: 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org)
