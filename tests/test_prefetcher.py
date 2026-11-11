@@ -53,3 +53,4 @@ def test_double_buffered_prefetcher_sequence():
 
 if __name__ == "__main__":
     test_double_buffered_prefetcher_sequence()
+

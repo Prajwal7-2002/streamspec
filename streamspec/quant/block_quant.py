@@ -121,3 +121,4 @@ class BlockQuantizedLinear(nn.Module):
             dtype=x.dtype
         )
         return torch.nn.functional.linear(x, w_dequant, self.bias)
+

@@ -105,3 +105,4 @@ class DoubleBufferedPrefetcher:
                 if name in layer_0_weights:
                     param.copy_(layer_0_weights[name], non_blocking=False)
         return active_buffer
+

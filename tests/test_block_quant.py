@@ -45,3 +45,4 @@ def test_int4_quantization_compression_and_fidelity():
 
 if __name__ == "__main__":
     test_int4_quantization_compression_and_fidelity()
+
