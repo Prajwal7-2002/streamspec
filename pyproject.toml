@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "streamspec"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
   { name="Prajwal7-2002", email="prajwalpujari16@gmail.com" },
 ]
