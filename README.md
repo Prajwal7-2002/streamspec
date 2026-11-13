@@ -5,8 +5,9 @@
 <br/>
 <br/>
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Prajwal7-2002/streamspec/blob/main/notebooks/streamspec_70b_benchmark.ipynb)
+[![PyPI](https://img.shields.io/pypi/v/streamspec.svg?color=blue)](https://pypi.org/project/streamspec/)
 [![HF Space](https://img.shields.io/badge/🤗_HF_Space-Studio-blue)](https://huggingface.co/spaces/prajwalpujari16/streamspec)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Prajwal7-2002/streamspec/blob/main/notebooks/streamspec_70b_benchmark.ipynb)
 [![CI/CD: Active](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml/badge.svg)](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml)
 [![Version: v1.2.0](https://img.shields.io/badge/Release-v1.2.0-blue.svg)](https://github.com/Prajwal7-2002/streamspec/releases/tag/v1.2.0)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
@@ -198,19 +199,19 @@ Running the zero-dependency local test harness (`python demo_local.py`) verifies
 
 ## 🛠️ Quickstart: 3-Second Local Execution
 
-### 1. Local Lightweight Execution ($0 Compute, <4 GB Storage)
-Run the verified local prototype and real Hugging Face models in seconds:
+### 1. Instant Installation from PyPI
+Install directly via pip and run the local benchmark simulator in seconds:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Prajwal7-2002/streamspec.git
-cd streamspec
+# 1. Install from PyPI
+pip install streamspec
 
 # 2. Run the verified local benchmark demo
-python demo_local.py
+streamspec demo
 
-# 3. Run real-world Hugging Face model benchmark
-python benchmark_real_qwen.py
+# 3. Or clone and run real-world Hugging Face model benchmark
+git clone https://github.com/Prajwal7-2002/streamspec.git
+cd streamspec && python benchmark_real_qwen.py
 ```
 
 ### 2. ☁️ Zero-Storage Cloud Execution (Run 70B Models for Free)
