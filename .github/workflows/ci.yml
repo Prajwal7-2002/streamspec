@@ -44,6 +44,12 @@ jobs:
         run: |
           python demo_local.py
 
+      - name: Run Benchmark SLA & Latency Regression Gate
+        env:
+          PYTHONPATH: .
+        run: |
+          streamspec gate --gen-tokens 16
+
       - name: Validate Cloud Benchmark Notebook Syntax
         run: |
           python -c "import json; nb = json.load(open('notebooks/streamspec_70b_benchmark.ipynb', encoding='utf-8')); assert len(nb['cells']) > 5, 'Notebook incomplete'; print('✅ Benchmark notebook validated successfully.')"
