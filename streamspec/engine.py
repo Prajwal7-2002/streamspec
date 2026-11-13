@@ -198,7 +198,8 @@ class StreamSpecEngine:
 
             # 3. Target Streaming Phase (Zero-Extra-Sweep Optimization)
             if self.config.zero_extra_sweep:
-                if trailing_token is None:
+                has_trailing = (trailing_token is not None)
+                if not has_trailing:
                     # Initial round: target streams draft_tokens directly
                     target_chunk_logits, target_kv = self.target_model.stream_forward(
                         draft_tokens, kv_caches=target_kv, pos_offset=curr_ids.shape[1]
@@ -226,6 +227,7 @@ class StreamSpecEngine:
                 )
 
                 # 5. Handle trailing token & KV cache trimming
+                kv_offset = 1 if has_trailing else 0
                 if gamma == chunk_size:
                     # All draft tokens accepted!
                     if tokens_generated + gamma < max_new:
@@ -233,16 +235,16 @@ class StreamSpecEngine:
                         accepted_chunk.append(bonus_token)
                         gamma += 1
                         trailing_token = torch.tensor([[bonus_token]], device=curr_ids.device)
-                        valid_kv_len = curr_kv_base + 1 + chunk_size
+                        valid_kv_len = curr_kv_base + kv_offset + chunk_size
                     else:
                         trailing_token = None
-                        valid_kv_len = curr_kv_base + chunk_size
+                        valid_kv_len = curr_kv_base + kv_offset + chunk_size
                 else:
                     # Rejection occurred at index (gamma - 1)
                     resampled_token = accepted_chunk[-1]
                     trailing_token = torch.tensor([[resampled_token]], device=curr_ids.device)
                     rejected_idx = gamma - 1
-                    valid_kv_len = curr_kv_base + 1 + rejected_idx
+                    valid_kv_len = curr_kv_base + kv_offset + rejected_idx
 
                 # Trim target KV cache to valid non-speculative prefix
                 if target_kv is not None:

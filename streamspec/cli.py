@@ -129,10 +129,19 @@ def main():
     demo_parser = subparsers.add_parser("demo", help="Run local architectural simulation demo")
     demo_parser.add_argument("--k-chunk", type=int, default=6, help="Speculative chunk size K (default: 6)")
     demo_parser.add_argument("--gen-tokens", type=int, default=24, help="Tokens to generate (default: 24)")
-    
+
+    # gate subcommand
+    gate_parser = subparsers.add_parser("gate", help="Run automated SLA regression & invariant verification gate")
+    gate_parser.add_argument("--gen-tokens", type=int, default=24, help="Tokens to generate (default: 24)")
+    gate_parser.add_argument("--k-chunk", type=int, default=6, help="Speculative chunk size K (default: 6)")
+    gate_parser.add_argument("--json", type=str, default=None, help="Save machine certificate to JSON")
+
     args = parser.parse_args()
-    
-    if args.command == "demo" or args.command is None:
+
+    if args.command == "gate":
+        from streamspec.benchmarks.sla_gate import run_gate_cli
+        sys.exit(run_gate_cli(gen_tokens=args.gen_tokens, k_chunk=args.k_chunk, output_json=args.json))
+    elif args.command == "demo" or args.command is None:
         run_demo(k_chunk=getattr(args, "k_chunk", 6), gen_tokens=getattr(args, "gen_tokens", 24))
     else:
         parser.print_help()
