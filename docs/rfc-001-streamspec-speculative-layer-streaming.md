@@ -314,3 +314,4 @@ The reference implementation is distributed as `streamspec v1.2.0` on PyPI and G
 
 ---
 *Copyright © 2026 Prajwal Pujari. Licensed under AGPLv3.*
+
