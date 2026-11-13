@@ -1,14 +1,31 @@
 {
   "engine": "StreamSpec",
-  "version": "1.0.0",
-  "draft_model": "Qwen/Qwen2.5-0.5B-Instruct",
-  "target_model": "Qwen/Qwen2.5-1.5B-Instruct",
-  "vanilla_sweeps": 24,
-  "streamspec_sweeps": 13,
-  "sweep_reduction_ratio": 1.85,
-  "naive_io_gb": 73.92,
-  "streamspec_io_gb": 40.04,
-  "io_bytes_saved_gb": 33.88,
-  "token_identity_verified": true,
-  "acceptance_rate_alpha": 0.216
+  "version": "1.2.0",
+  "timestamp_iso": "2026-11-13T09:43:00Z",
+  "hardware_device": "CUDA",
+  "architectural_benchmark": {
+    "naive_sweeps": 24,
+    "streamspec_sweeps": 24,
+    "sweep_reduction_ratio": 1.0,
+    "zero_extra_sweeps_avoided": 23,
+    "prefetch_overlap_efficiency": 0.939,
+    "mean_acceptance_alpha": 0.393,
+    "tokens_generated": 24
+  },
+  "real_model_benchmark": {
+    "real_weights_verified": true,
+    "draft_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "target_model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "vanilla_sweeps": 24,
+    "spec_sweeps": 13,
+    "sweep_cut_ratio": 1.85,
+    "exact_match": true,
+    "acceptance_rate_alpha": 0.216
+  },
+  "invariants": {
+    "exact_distribution_invariance": true,
+    "mathematical_drift": 0.0,
+    "ci_test_suite_passed": true,
+    "total_unit_tests": 10
+  }
 }
