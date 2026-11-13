@@ -1,0 +1,14 @@
+{
+  "engine": "StreamSpec",
+  "version": "1.0.0",
+  "draft_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "target_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "vanilla_sweeps": 24,
+  "streamspec_sweeps": 13,
+  "sweep_reduction_ratio": 1.85,
+  "naive_io_gb": 73.92,
+  "streamspec_io_gb": 40.04,
+  "io_bytes_saved_gb": 33.88,
+  "token_identity_verified": true,
+  "acceptance_rate_alpha": 0.216
+}

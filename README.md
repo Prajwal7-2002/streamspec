@@ -6,6 +6,7 @@
 <br/>
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Prajwal7-2002/streamspec/blob/main/notebooks/streamspec_70b_benchmark.ipynb)
+[![HF Space](https://img.shields.io/badge/🤗_HF_Space-Studio-blue)](https://huggingface.co/spaces/prajwalpujari16/streamspec)
 [![CI/CD: Active](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml/badge.svg)](https://github.com/Prajwal7-2002/streamspec/actions/workflows/ci.yml)
 [![Version: v1.2.0](https://img.shields.io/badge/Release-v1.2.0-blue.svg)](https://github.com/Prajwal7-2002/streamspec/releases/tag/v1.2.0)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
