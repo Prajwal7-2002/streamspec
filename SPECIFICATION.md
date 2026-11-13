@@ -167,3 +167,53 @@ Where:
 
 `StreamSpec` automatically profiles $B_{\text{bus}}$ at startup and analytically solves for $K^* \in [8, 24]$, guaranteeing peak hardware throughput without user configuration.
 
+---
+
+## 7. Asynchronous Double-Buffered Layer Prefetching (Choice A)
+
+In sequential layer streaming, naive synchronous implementations incur an idle hardware stall on every layer transition: the GPU / CPU compute cores sit idle while the interconnect transfers Layer $(\ell + 1)$ parameters into device memory.
+
+### 7.1. Alternating Buffer Ping-Pong Topology
+`StreamSpec` eliminates transfer stalls via `DoubleBufferedPrefetcher`, maintaining two physical module buffers on device:
+$$\mathcal{B} = \{B_0, B_1\}$$
+While active buffer $B_{\text{active}}$ executes Layer $\ell$ tensor cores:
+$$\mathbf{H}_{\ell} = B_{\text{active}}(\mathbf{H}_{\ell-1})$$
+A dedicated background transfer worker (or non-blocking CUDA `cudaMemcpyAsync` copy stream) transfers Layer $(\ell + 1)$ into standby buffer $B_{1 - \text{active}}$:
+$$B_{1 - \text{active}} \leftarrow \mathcal{W}_{\ell+1}$$
+
+### 7.2. Bus Overlap Efficiency $\eta_{\text{overlap}}$
+Let $T_{\text{xfer}}(\ell)$ be the memory bus transfer duration and $T_{\text{compute}}(\ell)$ be the tensor execution duration. The effective wall-clock layer latency is:
+$$T_{\text{layer}}(\ell) = \max\left(T_{\text{compute}}(\ell), T_{\text{xfer}}(\ell)\right) + \epsilon_{\text{sync}}$$
+The pipeline overlap efficiency is formally tracked as:
+$$\eta_{\text{overlap}} = \frac{\max\left(0, \sum T_{\text{xfer}} - \sum T_{\text{stall}}\right)}{\sum T_{\text{xfer}}}$$
+When $T_{\text{compute}} \ge T_{\text{xfer}}$, $\eta_{\text{overlap}} \to 1.0$, completely hiding the interconnect bus latency behind tensor core execution.
+
+---
+
+## 8. Zero-Extra-Sweep Optimization & Online Dynamic $K$ Controller (Choice B)
+
+### 8.1. Elimination of Redundant Synchronization Sweeps
+In classic speculative layer streaming, a verification round accepts $\gamma$ tokens from the draft chunk and generates a trailing resampled token $x_{\text{trailing}}$ upon first rejection (or a bonus token upon full chunk acceptance). 
+
+A naive pipeline executes an extra 1-token target stream sweep at the end of each round to synchronize target KV caches and logits. For $R$ speculative rounds, this introduces $R$ redundant target passes ($2\times$ disk sweeps).
+
+`StreamSpec` introduces **Zero-Extra-Sweep Concatenation**:
+The trailing accepted token $x_{\text{trailing}}$ is prepended directly into the subsequent round's speculative draft tensor:
+$$\mathbf{X}_{\text{sweep}}^{(r+1)} = \left[ x_{\text{trailing}}^{(r)} \;\Vert\; x_{\text{draft}, 1}^{(r+1)}, \dots, x_{\text{draft}, K}^{(r+1)} \right] \in \mathbb{R}^{1 + K}$$
+The target model sweeps layers **exactly once per round** at position offset:
+$$\text{pos\_offset} = \text{len}(\text{prefix}) - 1$$
+The first output logit $\hat{y}_0$ evaluates $x_{\text{trailing}}$ and supplies the exact baseline distribution for $x_{\text{draft}, 1}$, while logits $\hat{y}_{1 \dots K}$ verify the candidate chunk simultaneously. Redundant synchronization passes are eliminated completely ($O(1)$ disk sweeps per round).
+
+### 8.2. Online Adaptive Dynamic $K$ Controller (`AdaptiveChunkController`)
+Empirical token acceptance rate $\alpha_t$ varies dynamically based on reasoning difficulty: high in boilerplate prose ($\alpha \approx 0.85$), low in branching algorithmic logic ($\alpha \approx 0.35$). A static $K$ degrades throughput during difficult reasoning phases.
+
+`StreamSpec` deploys an online exponential moving average controller:
+$$\bar{\alpha}_{t} = \beta \bar{\alpha}_{t-1} + (1 - \beta) \left( \frac{\gamma_t}{K_t} \right) \quad (\beta = 0.85)$$
+$$K_{t+1} = \begin{cases}
+\min\left(K_{\max}, K_t + 1\right) & \text{if } \bar{\alpha}_t \ge \theta_{\text{high}} \; (0.75) \\
+\max\left(K_{\min}, K_t - 1\right) & \text{if } \bar{\alpha}_t \le \theta_{\text{low}} \; (0.40) \\
+K_t & \text{otherwise}
+\end{cases}$$
+This dynamically constrains speculative chunk size to match the instantaneous entropy of the reasoning stream, minimizing wasted verification FLOPs.
+
+

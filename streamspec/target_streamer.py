@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 from .architectures.llama import ModernTransformerBlock, RMSNorm
 from .memory.mmap_loader import LayerBufferPool
+from .memory.prefetcher import DoubleBufferedPrefetcher
 
 class TargetLayerStreamer(nn.Module):
     def __init__(
@@ -22,13 +23,15 @@ class TargetLayerStreamer(nn.Module):
         n_kv_heads: int = 2,
         d_head: int = 128,
         d_ffn: int = 2816,
-        device: str = "cpu"
+        device: str = "cpu",
+        use_prefetcher: bool = True,
     ):
         super().__init__()
         self.vocab_size = vocab_size
         self.d_model = d_model
         self.n_layers = n_layers
         self.device = device
+        self.use_prefetcher = use_prefetcher
 
         # Static in-memory embedding and LM head
         self.tok_embeddings = nn.Embedding(vocab_size, d_model)
@@ -46,6 +49,7 @@ class TargetLayerStreamer(nn.Module):
         # Single active execution layer buffer on execution device
         template_block = ModernTransformerBlock(d_model, n_q_heads, n_kv_heads, d_head, d_ffn)
         self.buffer_pool = LayerBufferPool(template_block, device=device)
+        self.prefetcher = DoubleBufferedPrefetcher(template_block, device=device) if use_prefetcher else None
 
         # Metrics
         self.total_stream_passes = 0
@@ -70,13 +74,26 @@ class TargetLayerStreamer(nn.Module):
         new_kv_caches = []
 
         # 2. Sequential Layer Stream: weights transferred into buffer layer-by-layer
-        for layer_idx in range(self.n_layers):
-            layer_weights = self.layer_weight_bank[layer_idx]
-            active_layer = self.buffer_pool.stream_layer_weights(layer_weights)
+        if self.use_prefetcher and self.prefetcher is not None:
+            active_layer = self.prefetcher.load_initial_layer(self.layer_weight_bank[0])
+            for layer_idx in range(self.n_layers):
+                if layer_idx + 1 < self.n_layers:
+                    self.prefetcher.start_prefetch(self.layer_weight_bank[layer_idx + 1])
 
-            layer_kv = kv_caches[layer_idx] if kv_caches else None
-            h, new_kv = active_layer(h, layer_kv, pos_offset=pos_offset)
-            new_kv_caches.append(new_kv)
+                layer_kv = kv_caches[layer_idx] if kv_caches else None
+                h, new_kv = active_layer(h, layer_kv, pos_offset=pos_offset)
+                new_kv_caches.append(new_kv)
+
+                if layer_idx + 1 < self.n_layers:
+                    active_layer = self.prefetcher.swap_and_get_active()
+        else:
+            for layer_idx in range(self.n_layers):
+                layer_weights = self.layer_weight_bank[layer_idx]
+                active_layer = self.buffer_pool.stream_layer_weights(layer_weights)
+
+                layer_kv = kv_caches[layer_idx] if kv_caches else None
+                h, new_kv = active_layer(h, layer_kv, pos_offset=pos_offset)
+                new_kv_caches.append(new_kv)
 
         # 3. Final projection
         normed = self.final_norm(h)

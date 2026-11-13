@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "streamspec"
-version = "1.1.0"
+version = "1.2.0"
 authors = [
   { name="Prajwal7-2002", email="prajwalpujari16@gmail.com" },
 ]
@@ -32,3 +32,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["streamspec*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

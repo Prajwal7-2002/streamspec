@@ -4,10 +4,10 @@ StreamSpec: High-Caliber Asynchronous Speculative Layer-Streaming Engine.
 Democratizing Frontier & Futuristic Reasoning Models on Consumer Silicon.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "Prajwal7-2002"
 
-from .engine import StreamSpecEngine, StreamSpecConfig
+from .engine import StreamSpecEngine, StreamSpecConfig, AdaptiveChunkController
 from .draft_worker import DraftWorker
 from .target_streamer import TargetLayerStreamer
 from .telemetry.monitor import StreamSpecTelemetry
@@ -19,6 +19,7 @@ from .architectures.sparse_moe import DeepSeekSparseMoE
 __all__ = [
     "StreamSpecEngine",
     "StreamSpecConfig",
+    "AdaptiveChunkController",
     "DraftWorker",
     "TargetLayerStreamer",
     "StreamSpecTelemetry",

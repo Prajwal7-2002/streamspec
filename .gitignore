@@ -23,6 +23,12 @@ ENV/
 checkpoints/
 cache/
 
+# Packaging & Distribution
+*.egg-info/
+dist/
+build/
+uv.lock
+
 # OS and Editor junk
 .DS_Store
 Thumbs.db

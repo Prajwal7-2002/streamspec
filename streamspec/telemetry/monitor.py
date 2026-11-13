@@ -15,11 +15,13 @@ class StreamSpecTelemetry:
         self.total_draft_tokens_accepted = 0
         self.total_bytes_streamed = 0
         self.naive_baseline_stream_passes = 0
+        self.total_sync_sweeps_avoided = 0
+        self.adaptive_k_history = []
 
     def start(self):
         self.start_time = time.perf_counter()
 
-    def record_chunk(self, proposed_k: int, accepted_gamma: int, bytes_streamed: int):
+    def record_chunk(self, proposed_k: int, accepted_gamma: int, bytes_streamed: int, current_k: int = None, rolling_alpha: float = None):
         self.total_speculative_sweeps += 1
         self.total_draft_tokens_proposed += proposed_k
         self.total_draft_tokens_accepted += accepted_gamma
@@ -27,6 +29,11 @@ class StreamSpecTelemetry:
         self.total_bytes_streamed += bytes_streamed
         # In naive single-token streaming, every token requires a separate disk sweep
         self.naive_baseline_stream_passes += accepted_gamma
+        if current_k is not None:
+            self.adaptive_k_history.append((current_k, accepted_gamma, rolling_alpha))
+
+    def record_sync_sweep_avoided(self):
+        self.total_sync_sweeps_avoided += 1
 
     @property
     def acceptance_rate(self) -> float:
@@ -59,6 +66,7 @@ class StreamSpecTelemetry:
         print(f"  Effective Throughput        : {self.tokens_per_second:.2f} tokens/sec")
         print(f"  Mean Acceptance Rate (alpha): {self.acceptance_rate * 100:.1f}%")
         print(f"  Speculative Stream Sweeps   : {self.total_speculative_sweeps}")
+        print(f"  Zero-Extra Sweeps Avoided   : {self.total_sync_sweeps_avoided} sweeps saved")
         print(f"  Naive Streaming Sweeps Avoid: {self.naive_baseline_stream_passes}")
         print(f"  Hardware I/O Bandwidth Saved: {self.io_reduction_factor:.2f}x reduction")
         print("=" * 68 + "\n")
