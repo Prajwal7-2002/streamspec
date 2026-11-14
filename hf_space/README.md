@@ -51,3 +51,21 @@ streamspec demo
 git clone https://github.com/Prajwal7-2002/streamspec.git
 cd streamspec && python benchmarks/run_suite.py
 ```
+
+---
+
+### Citation & Attribution
+
+If you use StreamSpec's speculative layer-streaming runtime, prefetcher equations, or empirical benchmark measurements in your research, systems, or blog, please cite:
+
+```bibtex
+@software{pujari2024streamspec,
+  author = {Pujari, Prajwal},
+  title = {StreamSpec: Asynchronous Speculative Layer-Streaming for Frontier AI on Consumer Silicon},
+  year = {2024},
+  publisher = {GitHub and Hugging Face},
+  howpublished = {\url{https://github.com/Prajwal7-2002/streamspec}},
+  url = {https://huggingface.co/spaces/prajwalpujari16/streamspec}
+}
+```
+
