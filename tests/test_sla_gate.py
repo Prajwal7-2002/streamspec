@@ -7,12 +7,12 @@ I/O reduction bounds, and generates valid CI reports.
 
 import os
 import pytest
+import torch
 from streamspec.benchmarks.sla_gate import StreamSpecSLAGate, run_gate_cli
 
 def test_sla_gate_pass():
     gate = StreamSpecSLAGate(
         min_io_reduction=1.20,
-        min_prefetch_overlap=0.80,
         min_acceptance_rate=0.15,
         vocab_size=300,
         prompt_len=4,
@@ -26,6 +26,16 @@ def test_sla_gate_pass():
     assert report["checks"]["io_reduction_factor"]["passed"] is True
     assert report["checks"]["prefetch_overlap_efficiency"]["passed"] is True
     assert report["checks"]["token_acceptance_rate"]["passed"] is True
+
+def test_sla_gate_hardware_aware_threshold():
+    # Verify device-aware threshold: 0.80 on CUDA DMA, 0.50 on CPU software emulation
+    gate_auto = StreamSpecSLAGate()
+    expected_default = 0.80 if torch.cuda.is_available() else 0.50
+    assert gate_auto.min_prefetch_overlap == expected_default
+
+    # Verify explicit override is preserved
+    gate_custom = StreamSpecSLAGate(min_prefetch_overlap=0.75)
+    assert gate_custom.min_prefetch_overlap == 0.75
 
 def test_sla_gate_violation_detection():
     # Set an impossible I/O reduction bound to trigger intentional SLA violation
