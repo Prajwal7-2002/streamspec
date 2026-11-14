@@ -496,6 +496,91 @@
     }
     footer a { color: var(--text-muted); text-decoration: none; }
     footer a:hover { color: var(--accent); }
+
+    /* Citation Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-card {
+      background: #141417;
+      border: 1px solid var(--border-bright);
+      border-radius: 12px;
+      max-width: 620px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: auto;
+      padding: 4px 8px;
+    }
+    .modal-close:hover { color: #fff; }
+    .cite-block {
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 12px 0;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      width: auto;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .copy-btn:hover { opacity: 0.9; }
+    .star-link {
+      background: rgba(245, 158, 11, 0.15) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      font-weight: 700 !important;
+    }
+    .star-link:hover {
+      background: var(--accent) !important;
+      color: #000 !important;
+    }
   </style>
 </head>
 <body>
@@ -517,6 +602,8 @@
         </div>
       </div>
       <div class="header-links">
+        <a class="header-link star-link" href="https://github.com/Prajwal7-2002/streamspec" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+        <button class="header-link" onclick="openCiteModal()" style="cursor: pointer; width: auto;">📋 Cite &amp; BibTeX</button>
         <a class="header-link" href="https://github.com/Prajwal7-2002/streamspec" target="_blank" rel="noopener">GitHub ↗</a>
         <a class="header-link" href="https://github.com/Prajwal7-2002/streamspec/blob/main/SPECIFICATION.md" target="_blank" rel="noopener">Architecture Spec ↗</a>
         <a class="header-link" href="https://colab.research.google.com/github/Prajwal7-2002/streamspec/blob/main/notebooks/streamspec_70b_benchmark.ipynb" target="_blank" rel="noopener" style="color: var(--accent); font-weight:700;">Google Colab ↗</a>
@@ -957,6 +1044,37 @@
 
   </div>
 
+  <!-- Citation Modal -->
+  <div id="cite-modal" class="modal-backdrop" onclick="closeCiteModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.2rem;">📋</span>
+          <h3 style="font-size:1.1rem; font-weight:700; color:#fff;">Cite StreamSpec</h3>
+        </div>
+        <button class="modal-close" onclick="closeCiteModal()">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin: 6px 0 12px;">
+        If you reference StreamSpec's asynchronous speculative layer-streaming runtime, prefetcher equations, or benchmark measurements in your research, blog, or production system, please cite:
+      </p>
+      <div style="position:relative;">
+        <pre id="bibtex-code" class="cite-block">@software{pujari2024streamspec,
+  author = {Pujari, Prajwal},
+  title = {StreamSpec: Asynchronous Speculative Layer-Streaming for Frontier AI on Consumer Silicon},
+  year = {2024},
+  publisher = {GitHub and Hugging Face},
+  howpublished = {\url{https://github.com/Prajwal7-2002/streamspec}},
+  url = {https://huggingface.co/spaces/prajwalpujari16/streamspec}
+}</pre>
+        <button id="copy-cite-btn" class="copy-btn" onclick="copyBibtex()">Copy BibTeX</button>
+      </div>
+      <div style="margin-top:16px; font-size:0.8rem; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:12px;">
+        <span>Author: <strong>Prajwal Pujari</strong> (<a href="https://github.com/Prajwal7-2002" target="_blank" rel="noopener" style="color:var(--accent);">@Prajwal7-2002</a>)</span>
+        <a href="https://github.com/Prajwal7-2002/streamspec" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none; font-weight:600;">Visit Repository &rarr;</a>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer>
     <div>
@@ -980,6 +1098,31 @@
       
       const targetPane = document.getElementById('tab-' + tabId);
       if (targetPane) targetPane.classList.add('active');
+    }
+
+    // Citation Modal logic
+    function openCiteModal() {
+      document.getElementById('cite-modal').classList.add('open');
+    }
+    function closeCiteModal(e) {
+      if (!e || e.target.id === 'cite-modal' || e.target.classList.contains('modal-close')) {
+        document.getElementById('cite-modal').classList.remove('open');
+      }
+    }
+    function copyBibtex() {
+      const text = document.getElementById('bibtex-code').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-cite-btn');
+        const orig = btn.innerText;
+        btn.innerText = '✓ Copied!';
+        btn.style.background = 'var(--emerald)';
+        btn.style.color = '#fff';
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.style.background = 'var(--accent)';
+          btn.style.color = '#000';
+        }, 2000);
+      });
     }
 
     // Tab 1: Gantt Simulation Logic
