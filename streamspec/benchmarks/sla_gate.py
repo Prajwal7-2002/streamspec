@@ -25,14 +25,20 @@ class StreamSpecSLAGate:
     def __init__(
         self,
         min_io_reduction: float = 1.20,
-        min_prefetch_overlap: float = 0.80,
+        min_prefetch_overlap: Optional[float] = None,
         min_acceptance_rate: float = 0.15,
         vocab_size: int = 150,
         prompt_len: int = 3,
         seed: int = 42
     ):
         self.min_io_reduction = min_io_reduction
-        self.min_prefetch_overlap = min_prefetch_overlap
+        if min_prefetch_overlap is None:
+            # Dedicated CUDA DMA copy stream achieves >= 80% overlap in hardware.
+            # Shared CPU host environments (e.g. CI VMs with GIL and single-bus memcpy)
+            # realistically achieve 50%-75% overlap without hardware DMA copy engines.
+            self.min_prefetch_overlap = 0.80 if torch.cuda.is_available() else 0.50
+        else:
+            self.min_prefetch_overlap = min_prefetch_overlap
         self.min_acceptance_rate = min_acceptance_rate
         self.vocab_size = vocab_size
         self.prompt_len = prompt_len
@@ -184,8 +190,13 @@ class StreamSpecSLAGate:
         lines.append("")
         return "\n".join(lines)
 
-def run_gate_cli(gen_tokens: int = 16, k_chunk: int = 4, output_json: Optional[str] = None) -> int:
-    gate = StreamSpecSLAGate()
+def run_gate_cli(
+    gen_tokens: int = 16,
+    k_chunk: int = 4,
+    min_prefetch_overlap: Optional[float] = None,
+    output_json: Optional[str] = None
+) -> int:
+    gate = StreamSpecSLAGate(min_prefetch_overlap=min_prefetch_overlap)
     report = gate.run(gen_tokens=gen_tokens, k_chunk=k_chunk)
     md = gate.render_markdown(report)
     print("\n" + md)

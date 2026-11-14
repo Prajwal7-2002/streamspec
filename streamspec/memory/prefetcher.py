@@ -125,24 +125,6 @@ class DoubleBufferedPrefetcher:
                 if name in layer_0_weights:
                     buf.copy_(layer_0_weights[name], non_blocking=False)
         return active_buffer
-        
-        # 3. Swap active buffer index
-        self.active_buf_idx = 1 - self.active_buf_idx
-        return self.buffers[self.active_buf_idx]
-
-    def load_initial_layer(self, layer_0_weights: Dict[str, torch.Tensor]) -> nn.Module:
-        """
-        Loads the initial layer 0 synchronously into active buffer before streaming loop starts.
-        """
-        active_buffer = self.buffers[self.active_buf_idx]
-        with torch.no_grad():
-            for name, param in active_buffer.named_parameters():
-                if name in layer_0_weights:
-                    param.copy_(layer_0_weights[name], non_blocking=False)
-            for name, buf in active_buffer.named_buffers():
-                if name in layer_0_weights:
-                    buf.copy_(layer_0_weights[name], non_blocking=False)
-        return active_buffer
 
     @property
     def overlap_efficiency(self) -> float:
